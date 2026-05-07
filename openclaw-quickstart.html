@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenClaw Quick Start — 3 步上手你的 AI 助手</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",PingFang SC,"Hiragino Sans GB","Microsoft YaHei UI","Microsoft YaHei",Arial,sans-serif;background:#f8f9fa;color:#333;line-height:1.6;font-size:15px}
+.container{max-width:800px;margin:0 auto;padding:0 20px}
+a{color:#0F4C81;text-decoration:none}a:hover{text-decoration:underline}
+
+/* Hero */
+.hero{background:linear-gradient(135deg,#0F4C81 0%,#1a6bb5 100%);color:#fff;padding:48px 20px 40px;text-align:center}
+.hero h1{font-size:28px;font-weight:700;margin-bottom:8px;letter-spacing:-0.5px}
+.hero .subtitle{font-size:17px;opacity:.9;margin-bottom:6px}
+.hero .desc{font-size:14px;opacity:.75;max-width:560px;margin:0 auto 20px}
+.hero .time-badge{display:inline-block;background:rgba(255,255,255,.18);border-radius:20px;padding:6px 18px;font-size:13px;margin-bottom:28px}
+.phase-cards{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.phase-card{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:14px 18px;min-width:180px;flex:1;max-width:220px}
+.phase-card .num{font-size:26px;font-weight:700;opacity:.5}.phase-card .label{font-size:13px;margin-top:2px}
+
+/* Progress bar */
+.progress-bar-wrap{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.1);transform:translateY(-100%);transition:transform .3s}
+.progress-bar-wrap.show{transform:translateY(0)}
+.progress-bar-inner{display:flex;align-items:center;padding:8px 20px;max-width:800px;margin:0 auto}
+.progress-track{flex:1;height:4px;background:#e9ecef;border-radius:2px;overflow:hidden;margin:0 12px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#0F4C81,#28a745);border-radius:2px;width:0;transition:width .4s}
+.progress-pct{font-size:13px;font-weight:600;color:#0F4C81;min-width:40px;text-align:right}
+.progress-phases{display:flex;gap:6px}
+.progress-dot{width:10px;height:10px;border-radius:50%;background:#dee2e6;transition:background .3s}
+.progress-dot.done{background:#28a745}
+
+/* Sections */
+.phase-section{margin:28px 0;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden}
+.phase-header{display:flex;align-items:center;gap:12px;padding:20px 24px;border-left:4px solid #0F4C81;background:#f8f9fa}
+.phase-header h2{font-size:19px;font-weight:700;color:#0F4C81}
+.phase-header .badge{background:#0F4C81;color:#fff;font-size:11px;padding:3px 10px;border-radius:12px;font-weight:500}
+.phase-header .est-time{margin-left:auto;font-size:12px;color:#888}
+.phase-body{padding:0 24px 24px}
+
+/* Steps */
+.step{padding:20px 0;border-bottom:1px solid #f0f0f0}
+.step:last-child{border-bottom:none}
+.step-head{display:flex;align-items:flex-start;gap:12px;cursor:pointer;user-select:none}
+.step-head:hover .step-title{color:#0F4C81}
+.step-num{background:#0F4C81;color:#fff;font-size:11px;font-weight:700;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-title{font-size:16px;font-weight:600;flex:1;padding-top:1px}
+.step-content{margin-top:14px;padding-left:36px}
+.step-content p{margin-bottom:10px;color:#444}
+
+/* Checkbox */
+.checkbox-wrap{display:flex;align-items:center;gap:10px;margin-top:16px;padding:10px 14px;background:#f8f9fa;border-radius:8px;cursor:pointer;user-select:none;transition:background .2s}
+.checkbox-wrap:hover{background:#eef2f7}
+.checkbox-wrap.checked{background:#e8f5e9}
+.custom-cb{width:20px;height:20px;border:2px solid #ccc;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.checkbox-wrap.checked .custom-cb{background:#28a745;border-color:#28a745}
+.custom-cb svg{opacity:0;transition:opacity .2s}
+.checkbox-wrap.checked .custom-cb svg{opacity:1}
+.checkbox-label{font-size:14px;color:#555}
+.checkbox-wrap.checked .checkbox-label{color:#2e7d32}
+
+/* Code block */
+.code-block{position:relative;background:#1e1e1e;border-radius:8px;margin:10px 0;overflow:hidden}
+.code-dots{display:flex;gap:6px;padding:10px 14px}
+.code-dots span{width:10px;height:10px;border-radius:50%}
+.code-dots .red{background:#ff5f57}.code-dots .yellow{background:#febc2e}.code-dots .green{background:#28c840}
+.code-content{padding:0 14px 14px;font-family:"SF Mono",Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:13px;color:#e0e0e0;white-space:pre;overflow-x:auto;line-height:1.7}
+.copy-btn{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.12);border:none;color:#aaa;border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer;transition:all .2s}
+.copy-btn:hover{background:rgba(255,255,255,.25);color:#fff}
+.copy-btn.copied{background:#28a745;color:#fff}
+
+/* Collapsible */
+.collapsible-trigger{display:flex;align-items:center;gap:6px;font-size:13px;color:#0F4C81;cursor:pointer;padding:8px 0;user-select:none}
+.collapsible-trigger:hover{text-decoration:underline}
+.collapsible-trigger .chevron{transition:transform .2s;display:inline-block}
+.collapsible-trigger.open .chevron{transform:rotate(90deg)}
+.collapsible-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.collapsible-body.open{max-height:2000px}
+.collapsible-inner{padding:12px 0}
+
+/* Callout */
+.callout{padding:12px 16px;border-radius:8px;margin:12px 0;font-size:13px}
+.callout-warn{background:#fff8e1;border-left:4px solid #f0ad4e;color:#7d6608}
+.callout-info{background:#e8f4fd;border-left:4px solid #2196f3;color:#1565c0}
+.callout-tip{background:#e8f5e9;border-left:4px solid #4caf50;color:#2e7d32}
+
+/* Chat message */
+.chat-msg{background:#e8f5e9;border-radius:12px 12px 12px 4px;padding:12px 16px;margin:8px 0;font-size:14px;color:#2e7d32;position:relative;max-width:90%}
+.chat-msg::before{content:"💬";position:absolute;top:-18px;left:0;font-size:12px}
+.chat-msg-alt{background:#e3f2fd;color:#1565c0;border-radius:12px 12px 4px 12px}
+
+/* Before/After */
+.ba-container{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0}
+.ba-box{background:#1e1e1e;border-radius:8px;padding:14px;font-family:"SF Mono",Monaco,Consolas,monospace;font-size:12px;color:#e0e0e0;line-height:1.8;overflow-x:auto}
+.ba-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;opacity:.5}
+
+/* Provider table */
+.provider-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.provider-table th{text-align:left;padding:10px 12px;background:#f0f4f8;border-bottom:2px solid #dee2e6;font-weight:600;color:#0F4C81}
+.provider-table td{padding:10px 12px;border-bottom:1px solid #f0f0f0}
+.provider-table tr:last-child td{border-bottom:none}
+
+/* FAQ accordion */
+.faq-item{border-bottom:1px solid #eee}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:14px 0;cursor:pointer;font-weight:600;font-size:14px;color:#333;user-select:none}
+.faq-q:hover{color:#0F4C81}
+.faq-q .chevron{transition:transform .2s}
+.faq-q.open .chevron{transform:rotate(180deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.faq-a.open{max-height:500px}
+.faq-a-inner{padding:0 0 16px;font-size:14px;color:#555}
+
+/* Next steps */
+.next-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0}
+.next-card{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:18px;text-align:center;transition:box-shadow .2s}
+.next-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.next-card .icon{font-size:28px;margin-bottom:8px}
+.next-card h4{font-size:14px;margin-bottom:4px;color:#0F4C81}
+.next-card p{font-size:12px;color:#888}
+
+/* Footer */
+.footer{text-align:center;padding:32px 20px;color:#999;font-size:12px;border-top:1px solid #eee;margin-top:32px}
+.footer a{color:#888}
+.footer .links{display:flex;gap:18px;justify-content:center;margin:10px 0;flex-wrap:wrap}
+.footer .reset-btn{margin-top:12px;background:none;border:1px solid #ddd;border-radius:6px;padding:6px 16px;color:#999;font-size:12px;cursor:pointer}
+.footer .reset-btn:hover{border-color:#dc3545;color:#dc3545}
+
+/* Confetti */
+.confetti-piece{position:fixed;width:8px;height:8px;top:-10px;z-index:999;border-radius:2px;animation:confetti-fall 3s ease-in forwards;pointer-events:none}
+@keyframes confetti-fall{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(100vh) rotate(720deg)}}
+
+/* Responsive */
+@media(max-width:600px){
+  .hero h1{font-size:22px}.hero .subtitle{font-size:15px}
+  .phase-cards{flex-direction:column;align-items:center}
+  .phase-card{max-width:100%;min-width:auto}
+  .phase-header{padding:16px 18px}.phase-body{padding:0 18px 18px}
+  .step-content{padding-left:0}
+  .ba-container{grid-template-columns:1fr}
+  .next-cards{grid-template-columns:1fr}
+  .provider-table{font-size:12px}.provider-table th,.provider-table td{padding:8px}
+  .code-content{font-size:12px}
+}
+@media print{
+  .progress-bar-wrap,.copy-btn,.checkbox-wrap,.confetti-piece,.footer .reset-btn{display:none!important}
+  .phase-section{break-inside:avoid;box-shadow:none;border:1px solid #ddd}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar-wrap" id="progressBar">
+  <div class="progress-bar-inner">
+    <div class="progress-phases">
+      <div class="progress-dot" id="dot-p1"></div>
+      <div class="progress-dot" id="dot-p2"></div>
+      <div class="progress-dot" id="dot-p3"></div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-pct" id="progressPct">0%</div>
+  </div>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="container">
+    <h1>OpenClaw Quick Start</h1>
+    <div class="subtitle">3 步上手你的 AI 助手</div>
+    <div class="desc">OpenClaw 是一个自托管的 AI 助手，运行在你的电脑上，可以连接微信、WhatsApp 等平台。本页引导你完成安装、配置、并执行第一个任务。</div>
+    <div class="time-badge">预计用时 15-25 分钟</div>
+    <div class="phase-cards">
+      <div class="phase-card"><div class="num">01</div><div class="label">安装 OpenClaw</div></div>
+      <div class="phase-card"><div class="num">02</div><div class="label">配置 AI 模型</div></div>
+      <div class="phase-card"><div class="num">03</div><div class="label">第一个任务</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- Phase 1 -->
+<div class="phase-section" id="phase1">
+  <div class="phase-header">
+    <h2>Phase 1: 安装 OpenClaw</h2>
+    <span class="badge">3 步</span>
+    <span class="est-time">~3 分钟</span>
+  </div>
+  <div class="phase-body">
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">1</span><span class="step-title">打开终端（命令行）</span></div>
+      <div class="step-content">
+        <p>终端是一个可以输入文字命令的窗口，所有安装和配置操作都在这里完成。</p>
+
+        <div class="callout callout-info" style="margin-bottom:12px">
+          <strong>macOS：</strong>按 <kbd>Command</kbd> + <kbd>空格</kbd>，输入 <strong>Terminal</strong>（终端），回车打开。<br>
+          也可以打开"访达" → "应用程序" → "实用工具" → 双击"终端"。<br><br>
+          <strong>Windows：</strong>按 <kbd>Win</kbd> 键，输入 <strong>PowerShell</strong>，点击打开。<br>
+          或右键开始菜单选择"Windows PowerShell"。<br><br>
+          <strong>Linux：</strong>按 <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>（大多数发行版通用）。
+        </div>
+        <p style="font-size:13px;color:#888">打开后你会看到一个黑色/白色的窗口，里面有闪烁的光标 — 这就是终端。接下来的命令都在这里输入。</p>
+
+        <div class="checkbox-wrap" data-step="step-1-0" onclick="toggleCheck(this)">
+          <div class="custom-cb"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="checkbox-label">已打开终端</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">2</span><span class="step-title">一键安装</span></div>
+      <div class="step-content">
+        <p>复制下面的命令，粘贴到终端中，按回车执行：</p>
+
+        <div class="callout callout-tip" style="margin-bottom:12px">
+          <strong>macOS / Linux：</strong>安装脚本会自动检测系统、安装 Node.js（如果没有）、安装 OpenClaw、并启动引导向导。
+        </div>
+        <div class="code-block">
+          <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+          <div class="code-content" id="code-1-1">curl -fsSL https://openclaw.ai/install.sh | bash</div>
+          <button class="copy-btn" onclick="copyCode('code-1-1',this)">Copy</button>
+        </div>
+
+        <p style="margin-top:12px"><strong>Windows 用户：</strong>在 PowerShell 中运行：</p>
+        <div class="code-block">
+          <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+          <div class="code-content" id="code-1-1-win">iwr -useb https://openclaw.ai/install.ps1 | iex</div>
+          <button class="copy-btn" onclick="copyCode('code-1-1-win',this)">Copy</button>
+        </div>
+
+        <p style="margin-top:14px;font-size:14px;color:#555">脚本运行完成后会自动进入引导向导，按提示选择模型、输入 API Key 即可。引导向导会在 Phase 2 详细说明。</p>
+
+        <div class="collapsible-trigger" onclick="toggleCollapse('manual-install')">
+          <span class="chevron">&#9654;</span> 想手动分步安装？
+        </div>
+        <div class="collapsible-body" id="manual-install">
+          <div class="collapsible-inner">
+            <p style="font-size:13px;color:#666;margin-bottom:8px">如果一键脚本遇到问题，可以手动操作：</p>
+            <p style="font-size:13px;color:#666;margin-bottom:6px"><strong>1. 安装 Node.js</strong>（需要 v22.16+ 或 v24）</p>
+            <p style="font-size:13px;color:#666;margin-bottom:4px">推荐用 nvm（免 sudo 权限问题）：</p>
+            <div class="code-block">
+              <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+              <div class="code-content" id="code-nvm">curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash</div>
+              <button class="copy-btn" onclick="copyCode('code-nvm',this)">Copy</button>
+            </div>
+            <p style="font-size:13px;color:#666;margin:6px 0">重启终端后：</p>
+            <div class="code-block">
+              <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+              <div class="code-content" id="code-nvm-install">nvm install --lts</div>
+              <button class="copy-btn" onclick="copyCode('code-nvm-install',this)">Copy</button>
+            </div>
+            <p style="font-size:13px;color:#666;margin:10px 0 6px">或直接从 <a href="https://nodejs.org" target="_blank">nodejs.org</a> 下载 LTS 安装包，双击安装。</p>
+
+            <p style="font-size:13px;color:#666;margin:12px 0 6px"><strong>2. 安装 OpenClaw</strong></p>
+            <div class="code-block">
+              <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+              <div class="code-content" id="code-npm-install">npm install -g openclaw@latest</div>
+              <button class="copy-btn" onclick="copyCode('code-npm-install',this)">Copy</button>
+            </div>
+
+            <p style="font-size:13px;color:#666;margin:12px 0 6px"><strong>3. 运行引导向导</strong></p>
+            <div class="code-block">
+              <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+              <div class="code-content" id="code-onboard">openclaw onboard --install-daemon</div>
+              <button class="copy-btn" onclick="copyCode('code-onboard',this)">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkbox-wrap" data-step="step-1-1" onclick="toggleCheck(this)">
+          <div class="custom-cb"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="checkbox-label">安装完成，进入引导向导</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">3</span><span class="step-title">验证安装</span></div>
+      <div class="step-content">
+        <p>安装完成后，在终端中运行以下命令确认：</p>
+        <div class="code-block">
+          <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+          <div class="code-content" id="code-1-3">openclaw --version</div>
+          <button class="copy-btn" onclick="copyCode('code-1-3',this)">Copy</button>
+        </div>
+        <p style="font-size:13px;color:#888">预期输出: <code>openclaw 2026.x.x</code></p>
+
+        <div class="code-block">
+          <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+          <div class="code-content" id="code-1-4">openclaw doctor</div>
+          <button class="copy-btn" onclick="copyCode('code-1-4',this)">Copy</button>
+        </div>
+        <p style="font-size:13px;color:#888">这个命令会自动检查配置是否有问题。看到绿色提示即表示一切正常。</p>
+
+        <div class="checkbox-wrap" data-step="step-1-2" onclick="toggleCheck(this)">
+          <div class="custom-cb"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="checkbox-label">验证通过</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Phase 2 -->
+<div class="phase-section" id="phase2">
+  <div class="phase-header">
+    <h2>Phase 2: 配置 AI 模型</h2>
+    <span class="badge">6 步</span>
+    <span class="est-time">~8 分钟</span>
+  </div>
+  <div class="phase-body">
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">1</span><span class="step-title">了解配置文件</span></div>
+      <div class="step-content">
+        <p>OpenClaw 的配置存储在 <code>~/.openclaw/openclaw.json</code>，核心配置包括模型提供商和 Gateway 设置。</p>
+
+        <div class="collapsible-trigger" onclick="toggleCollapse('config-sample')">
+          <span class="chevron">&#9654;</span> 查看配置文件结构示例
+        </div>
+        <div class="collapsible-body" id="config-sample">
+          <div class="collapsible-inner">
+            <div class="code-block">
+              <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+              <div class="code-content">{
+  "models": {
+    "providers": {
+      "minimax": {
+        "baseUrl": "https://api.minimaxi.com/anthropic",
+        "api": "anthropic-messages"
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "minimax/MiniMax-M2.7"
+      }
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "bind": "loopback"
+  }
+}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkbox-wrap" data-step="step-2-1" onclick="toggleCheck(this)">
+          <div class="custom-cb"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="checkbox-label">了解配置文件位置</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">2</span><span class="step-title">获取 API Key</span></div>
+      <div class="step-content">
+        <p>选择一个模型提供商，注册并获取 API Key：</p>
+        <table class="provider-table">
+          <thead><tr><th>提供商</th><th>推荐模型</th><th>注册链接</th></tr></thead>
+          <tbody>
+            <tr><td><strong>MiniMax</strong></td><td>MiniMax-M2.7</td><td><a href="https://platform.minimaxi.com" target="_blank">platform.minimaxi.com</a></td></tr>
+            <tr><td><strong>DeepSeek</strong></td><td>DeepSeek-V3</td><td><a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a></td></tr>
+            <tr><td><strong>DashScope</strong></td><td>Qwen-Max</td><td><a href="https://dashscope.aliyun.com" target="_blank">dashscope.aliyun.com</a></td></tr>
+            <tr><td><strong>OpenAI</strong></td><td>GPT-4o</td><td><a href="https://platform.openai.com" target="_blank">platform.openai.com</a></td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:13px;color:#888">注册后在 API Keys 页面创建新 Key 并复制保存。</p>
+
+        <div class="checkbox-wrap" data-step="step-2-2" onclick="toggleCheck(this)">
+          <div class="custom-cb"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="checkbox-label">已获取 API Key</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">3</span><span class="step-title">运行安装向导</span></div>
+      <div class="step-content">
+        <p>OpenClaw 内置引导式安装向导，会自动完成配置和 Gateway 安装：</p>
+        <div class="code-block">
+          <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+          <div class="code-content" id="code-2-1">openclaw onboard --install-daemon</div>
+          <button class="copy-btn" onclick="copyCode('code-2-1',this)">Copy</button>
+        </div>
+        <p>向导会依次引导你：<strong>选择模型提供商</strong> → <strong>输入 API Key</strong> → <strong>设置 Gateway</strong> → <strong>安装后台服务</strong>。全程按提示操作即可，无需手动编辑配置文件。</p>
+
+        <div class="collapsible-trigger" onclick="toggleCollapse('manual-config')">
+          <span class="chevron">&#9654;</span> 手动编辑配置（高级）
+        </div>
+        <div class="collapsible-body" id="manual-config">
+          <div class="collapsible-inner">
+            <p style="font-size:13px;color:#666;margin-bottom:8px">也可以直接编辑 <code>~/.openclaw/openclaw.json</code>，以下为 MiniMax 模板：</p>
+            <div class="code-block">
+              <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+              <div class="code-content" id="code-2-2">{
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "minimax": {
+        "baseUrl": "https://api.minimaxi.com/anthropic",
+        "models": [],
+        "api": "anthropic-messages",
+        "authHeader": true
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "minimax/MiniMax-M2.7"
+      }
+    }
+  }
+}</div>
+              <button class="copy-btn" onclick="copyCode('code-2-2',this)">Copy</button>
+            </div>
+            <div class="callout callout-warn">注意：contextWindow 字段必须手动填写，否则 OpenClaw 默认使用 16K 上下文，会导致 AI 回答质量下降。</div>
+          </div>
+        </div>
+
+        <div class="checkbox-wrap" data-step="step-2-3" onclick="toggleCheck(this)">
+          <div class="custom-cb"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="checkbox-label">配置向导完成</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">4</span><span class="step-title">验证 Gateway 运行</span></div>
+      <div class="step-content">
+        <p>安装向导已自动启动 Gateway 后台服务。验证运行状态：</p>
+        <div class="code-block">
+          <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+          <div class="code-content" id="code-2-4">openclaw status</div>
+          <button class="copy-btn" onclick="copyCode('code-2-4',this)">Copy</button>
+        </div>
+        <div class="callout callout-tip">打开浏览器访问 <a href="http://localhost:18789" target="_blank">http://localhost:18789</a>，你应该能看到 OpenClaw 的控制面板。</div>
+
+        <div class="checkbox-wrap" data-step="step-2-4" onclick="toggleCheck(this)">
+          <div class="custom-cb"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="checkbox-label">Gateway 启动成功</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">5</span><span class="step-title">添加更多模型（可选）</span></div>
+      <div class="step-content">
+        <p>OpenClaw 支持同时配置多个模型提供商，随时切换。编辑 <code>~/.openclaw/openclaw.json</code>：</p>
+
+        <div class="collapsible-trigger" onclick="toggleCollapse('multi-model')">
+          <span class="chevron">&#9654;</span> 查看多模型配置示例
+        </div>
+        <div class="collapsible-body" id="multi-model">
+          <div class="collapsible-inner">
+            <div class="code-block">
+              <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+              <div class="code-content" id="code-2-5">{
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "minimax": {
+        "baseUrl": "https://api.minimaxi.com/anthropic",
+        "api": "anthropic-messages",
+        "authHeader": true
+      },
+      "deepseek": {
+        "baseUrl": "https://api.deepseek.com/anthropic",
+        "api": "anthropic-messages"
+      },
+      "dashscope": {
+        "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "api": "openai-chat"
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "minimax/MiniMax-M2.7"
+      }
+    }
+  }
+}</div>
+              <button class="copy-btn" onclick="copyCode('code-2-5',this)">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <p style="margin-top:12px"><strong>切换默认模型：</strong>修改 <code>agents.defaults.model.primary</code> 的值，格式为 <code>provider/model-name</code></p>
+        <table class="provider-table" style="margin-top:8px">
+          <thead><tr><th>提供商</th><th>模型名称</th><th>primary 值</th></tr></thead>
+          <tbody>
+            <tr><td>MiniMax</td><td>MiniMax-M2.7</td><td><code>minimax/MiniMax-M2.7</code></td></tr>
+            <tr><td>DeepSeek</td><td>DeepSeek-V3</td><td><code>deepseek/DeepSeek-V3</code></td></tr>
+            <tr><td>DashScope</td><td>Qwen-Max</td><td><code>dashscope/qwen-max</code></td></tr>
+            <tr><td>OpenAI</td><td>GPT-4o</td><td><code>openai/gpt-4o</code></td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:13px;color:#888;margin-top:8px">修改配置后重启 Gateway 生效：<code>openclaw gateway restart</code></p>
+
+        <div class="checkbox-wrap" data-step="step-2-5" onclick="toggleCheck(this)">
+          <div class="custom-cb"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="checkbox-label">了解模型配置方法</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">6</span><span class="step-title">配置网络代理（如需翻墙）</span></div>
+      <div class="step-content">
+        <p>如果你使用代理软件（如 Clash Verge、V2Ray 等）访问海外 API，需要让 OpenClaw 的流量也走代理。</p>
+
+        <div class="callout callout-info">
+          <strong>为什么需要配置？</strong>OpenClaw 的 Gateway 进程不会自动读取系统代理设置。即使你的浏览器能正常访问 API，Gateway 仍然可能直连导致超时或报错。
+        </div>
+
+        <p style="margin-top:12px"><strong>方法一：CLI 命令配置（推荐）</strong></p>
+        <p style="font-size:13px;color:#666;margin-bottom:8px">Clash Verge 默认 HTTP 代理端口为 <code>7890</code>，请根据你的实际端口调整：</p>
+        <div class="code-block">
+          <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+          <div class="code-content" id="code-proxy-cli">openclaw config set proxy.enabled true
+openclaw config set proxy.proxyUrl http://127.0.0.1:7890
+openclaw gateway restart</div>
+          <button class="copy-btn" onclick="copyCode('code-proxy-cli',this)">Copy</button>
+        </div>
+
+        <p style="margin-top:14px"><strong>方法二：环境变量</strong></p>
+        <div class="code-block">
+          <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+          <div class="code-content" id="code-proxy-env">export OPENCLAW_PROXY_URL=http://127.0.0.1:7890
+openclaw gateway run</div>
+          <button class="copy-btn" onclick="copyCode('code-proxy-env',this)">Copy</button>
+        </div>
+
+        <p style="margin-top:14px"><strong>方法三：写入配置文件</strong></p>
+        <p style="font-size:13px;color:#666;margin-bottom:8px">编辑 <code>~/.openclaw/openclaw.json</code>，添加 <code>proxy</code> 字段：</p>
+        <div class="code-block">
+          <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+          <div class="code-content" id="code-proxy-json">{
+  "proxy": {
+    "enabled": true,
+    "proxyUrl": "http://127.0.0.1:7890",
+    "loopbackMode": "gateway-only"
+  },
+  "models": { ... },
+  "agents": { ... }
+}</div>
+          <button class="copy-btn" onclick="copyCode('code-proxy-json',this)">Copy</button>
+        </div>
+
+        <p style="margin-top:14px"><strong>验证代理是否生效：</strong></p>
+        <div class="code-block">
+          <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+          <div class="code-content" id="code-proxy-validate">openclaw proxy validate --proxy-url http://127.0.0.1:7890</div>
+          <button class="copy-btn" onclick="copyCode('code-proxy-validate',this)">Copy</button>
+        </div>
+        <p style="font-size:13px;color:#888">看到 <code>ok: true</code> 即表示代理配置正确。</p>
+
+        <div class="callout callout-warn">
+          <strong>注意事项：</strong><br>
+          &bull; 代理 URL 必须用 <code>http://</code>，不能用 <code>https://</code><br>
+          &bull; 仅支持 HTTP 正向代理，不支持 SOCKS 代理<br>
+          &bull; Clash Verge 同时提供 HTTP 和 SOCKS 端口，使用 HTTP 那个（默认 7890）<br>
+          &bull; <code>loopbackMode: gateway-only</code>（默认）让本地 Gateway 流量直连不走代理，推荐保留
+        </div>
+
+        <div class="collapsible-trigger" onclick="toggleCollapse('proxy-troubleshoot')">
+          <span class="chevron">&#9654;</span> 代理配置后仍然连不上？
+        </div>
+        <div class="collapsible-body" id="proxy-troubleshoot">
+          <div class="collapsible-inner">
+            <p style="font-size:13px;color:#666;margin-bottom:6px">1. 确认 Clash Verge 正在运行，且系统代理已开启</p>
+            <p style="font-size:13px;color:#666;margin-bottom:6px">2. 确认端口号正确：打开 Clash Verge → 设置 → 查看 HTTP 代理端口</p>
+            <p style="font-size:13px;color:#666;margin-bottom:6px">3. 手动测试代理连通性：</p>
+            <div class="code-block">
+              <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+              <div class="code-content" id="code-proxy-curl">curl -x http://127.0.0.1:7890 https://api.openai.com</div>
+              <button class="copy-btn" onclick="copyCode('code-proxy-curl',this)">Copy</button>
+            </div>
+            <p style="font-size:13px;color:#666;margin-top:8px">4. 如果 Clash Verge 开了"系统代理"模式，尝试改为"规则"模式</p>
+            <p style="font-size:13px;color:#666;margin-bottom:6px">5. 检查是否有 <code>no_proxy</code> 环境变量干扰：</p>
+            <div class="code-block">
+              <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+              <div class="code-content" id="code-proxy-check">echo $HTTP_PROXY $HTTPS_PROXY $no_proxy</div>
+              <button class="copy-btn" onclick="copyCode('code-proxy-check',this)">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkbox-wrap" data-step="step-2-6" onclick="toggleCheck(this)">
+          <div class="custom-cb"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="checkbox-label">代理配置完成（或不需要代理）</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Phase 3 -->
+<div class="phase-section" id="phase3">
+  <div class="phase-header">
+    <h2>Phase 3: 第一个任务 — 整理桌面文件</h2>
+    <span class="badge">4 步</span>
+    <span class="est-time">~5 分钟</span>
+  </div>
+  <div class="phase-body">
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">1</span><span class="step-title">备份桌面</span></div>
+      <div class="step-content">
+        <div class="callout callout-warn">重要：在让 AI 操作文件之前，建议先备份桌面。OpenClaw 会直接在你的文件系统上执行操作。</div>
+        <p>运行以下命令创建桌面备份：</p>
+        <div class="code-block">
+          <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+          <div class="code-content" id="code-3-1">cp -r ~/Desktop ~/Desktop-backup-$(date +%Y%m%d)</div>
+          <button class="copy-btn" onclick="copyCode('code-3-1',this)">Copy</button>
+        </div>
+
+        <div class="checkbox-wrap" data-step="step-3-1" onclick="toggleCheck(this)">
+          <div class="custom-cb"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="checkbox-label">已备份桌面</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">2</span><span class="step-title">发送整理指令</span></div>
+      <div class="step-content">
+        <p>在 OpenClaw 的对话界面（Web UI 或微信）中，发送以下指令：</p>
+        <div class="chat-msg">请帮我整理桌面文件，按照文件名称和内容分类到不同文件夹</div>
+        <p style="margin-top:14px">如果想要更精确的控制，可以使用详细版：</p>
+        <div class="chat-msg">请扫描 ~/Desktop 目录下的所有文件，根据文件名称和内容将它们分类到不同文件夹中。例如：工作文档、个人文件、图片、视频、安装包等。请先列出你的分类计划，确认后再执行。</div>
+
+        <div class="checkbox-wrap" data-step="step-3-2" onclick="toggleCheck(this)">
+          <div class="custom-cb"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="checkbox-label">已发送整理指令</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">3</span><span class="step-title">效果展示</span></div>
+      <div class="step-content">
+        <p>OpenClaw 会先扫描所有文件，根据文件名、扩展名和内容分析提出分类方案，确认后自动创建文件夹并移动文件：</p>
+        <div class="ba-container">
+          <div class="ba-box">
+            <div class="ba-label">整理前</div>
+~/Desktop/<br>
+&#9500;&#9472; 会议记录.docx<br>
+&#9500;&#9472; IMG_20260501.jpg<br>
+&#9500;&#9472; 项目方案.pdf<br>
+&#9500;&#9472; vacation.png<br>
+&#9500;&#9472; setup.dmg<br>
+&#9500;&#9472; 笔记.txt<br>
+&#9500;&#9472; screenshot.png<br>
+&#9500;&#9472; report.xlsx<br>
+&#9492;&#9472; 聚餐照片.jpg
+          </div>
+          <div class="ba-box">
+            <div class="ba-label">整理后</div>
+~/Desktop/<br>
+&#9500;&#9472; <span style="color:#4fc3f7">工作文档/</span><br>
+&#9474;&nbsp;&nbsp;&#9500;&#9472; 会议记录.docx<br>
+&#9474;&nbsp;&nbsp;&#9500;&#9472; 项目方案.pdf<br>
+&#9474;&nbsp;&nbsp;&#9492;&#9472; report.xlsx<br>
+&#9500;&#9472; <span style="color:#4fc3f7">图片/</span><br>
+&#9474;&nbsp;&nbsp;&#9500;&#9472; IMG_20260501.jpg<br>
+&#9474;&nbsp;&nbsp;&#9500;&#9472; vacation.png<br>
+&#9474;&nbsp;&nbsp;&#9500;&#9472; screenshot.png<br>
+&#9474;&nbsp;&nbsp;&#9492;&#9472; 聚餐照片.jpg<br>
+&#9500;&#9472; <span style="color:#4fc3f7">个人文件/</span><br>
+&#9474;&nbsp;&nbsp;&#9492;&#9472; 笔记.txt<br>
+&#9492;&#9472; <span style="color:#4fc3f7">安装包/</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&#9492;&#9472; setup.dmg
+          </div>
+        </div>
+
+        <div class="checkbox-wrap" data-step="step-3-3" onclick="toggleCheck(this)">
+          <div class="custom-cb"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="checkbox-label">已了解整理效果</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">4</span><span class="step-title">检查与微调</span></div>
+      <div class="step-content">
+        <p>整理完成后，检查文件夹分类是否合理。如果有文件被分错，可以告诉 OpenClaw：</p>
+        <div class="chat-msg">请把笔记.txt 从个人文件移到工作文档</div>
+        <div class="chat-msg chat-msg-alt" style="margin-top:8px">图片文件夹里的 screenshot.png 应该归到截图文件夹</div>
+        <p style="margin-top:14px">你也可以让 OpenClaw 以后定期整理：</p>
+        <div class="chat-msg">请记住：每周五下午帮我检查桌面，如果有散落的文件就自动整理归类。</div>
+
+        <div class="checkbox-wrap" data-step="step-3-4" onclick="toggleCheck(this)">
+          <div class="custom-cb"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="checkbox-label">任务完成</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Bonus Tasks -->
+<div class="phase-section">
+  <div class="phase-header">
+    <h2>更多任务示例</h2>
+    <span class="badge">试试看</span>
+  </div>
+  <div class="phase-body">
+    <p style="margin-bottom:16px;color:#555">桌面整理只是开始，OpenClaw 能做的事情远不止这些。以下是更多实用任务：</p>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">1</span><span class="step-title">批量重命名文件</span></div>
+      <div class="step-content">
+        <div class="chat-msg">请把 ~/Downloads 里的所有照片按拍摄日期重命名，格式为 YYYY-MM-DD_序号.jpg</div>
+        <p style="font-size:13px;color:#888;margin-top:8px">OpenClaw 会读取照片的 EXIF 信息来获取拍摄日期。</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">2</span><span class="step-title">整理浏览器书签</span></div>
+      <div class="step-content">
+        <div class="chat-msg">请帮我分析 Safari 书签，找出重复的和已失效的链接，然后按类别整理</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">3</span><span class="step-title">生成周报</span></div>
+      <div class="step-content">
+        <div class="chat-msg">请根据我本周的 git commit 记录和日历事件，帮我生成一份工作周报</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">4</span><span class="step-title">定时提醒</span></div>
+      <div class="step-content">
+        <div class="chat-msg">每天早上 9 点提醒我查看邮件，下午 6 点提醒我记录今天的工作</div>
+        <p style="font-size:13px;color:#888;margin-top:8px">OpenClaw 内置定时任务功能，会按时通过你配置的渠道发送提醒。</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">5</span><span class="step-title">连接微信</span></div>
+      <div class="step-content">
+        <p>配置微信渠道后，你可以直接在微信里和 OpenClaw 对话，随时随地使用 AI 助手：</p>
+        <div class="code-block">
+          <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+          <div class="code-content" id="code-weixin">openclaw channels add weixin</div>
+          <button class="copy-btn" onclick="copyCode('code-weixin',this)">Copy</button>
+        </div>
+        <p style="font-size:13px;color:#888;margin-top:8px">详见 <a href="https://docs.openclaw.ai/channels/wechat" target="_blank">微信渠道文档</a>。OpenClaw 还支持 WhatsApp、Telegram、Discord 等 20+ 平台。</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Troubleshooting -->
+<div class="phase-section">
+  <div class="phase-header">
+    <h2>常见问题</h2>
+  </div>
+  <div class="phase-body">
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>npm install 报错 EACCES 权限问题</span><span class="chevron">&#9660;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">这是 npm 全局安装权限问题。解决方案：<br>1. macOS/Linux: 在命令前加 <code>sudo</code>：<code>sudo npm install -g openclaw</code><br>2. 或修复 npm 权限：<code>mkdir ~/.npm-global</code>，然后配置 npm 使用该目录。<br>3. 推荐使用 nvm 管理 Node.js 版本，可避免权限问题。</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>openclaw: command not found</span><span class="chevron">&#9660;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">npm 全局安装路径不在系统 PATH 中。<br>1. 运行 <code>npm root -g</code> 查看全局安装路径<br>2. 将该路径的上级 <code>bin</code> 目录添加到 PATH<br>3. 或使用 nvm 重新安装 Node.js</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>Gateway 启动失败，端口被占用</span><span class="chevron">&#9660;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">默认端口 18789 被其他程序占用。<br>1. 查看占用端口的进程：<code>lsof -i :18789</code><br>2. 停止该进程或修改 OpenClaw 配置中的端口号<br>3. 重启 Gateway：<code>openclaw gateway restart</code></div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>API 调用失败 / 模型无响应</span><span class="chevron">&#9660;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">1. 检查 API Key 是否正确配置<br>2. 确认 API 账户有余额<br>3. 检查网络连接，某些模型提供商需要稳定网络<br>4. 如果使用代理，确认代理已正确配置（见 Phase 2 Step 6）<br>5. 查看日志排查：<code>openclaw logs | grep -i error</code></div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>使用 Clash/V2Ray 代理后 API 仍然超时</span><span class="chevron">&#9660;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">OpenClaw 不会自动读取系统代理，需要手动配置：<br>1. 确认已按 Phase 2 Step 6 配置了 <code>proxy.proxyUrl</code><br>2. 代理 URL 必须是 <code>http://</code>（不是 <code>https://</code>），端口用 HTTP 代理端口（非 SOCKS）<br>3. 验证代理连通性：<code>openclaw proxy validate --proxy-url http://127.0.0.1:7890</code><br>4. 检查代理软件是否开启了"系统代理"模式，尝试切换为"规则"模式<br>5. 手动测试：<code>curl -x http://127.0.0.1:7890 https://api.openai.com</code></div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>代理配置后本地 Gateway 也走代理了，变慢了</span><span class="chevron">&#9660;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">默认 <code>loopbackMode: gateway-only</code> 应该让本地 Gateway 流量直连。如果仍然走代理：<br>1. 确认配置中 <code>proxy.loopbackMode</code> 设为 <code>gateway-only</code>（默认值）<br>2. 检查是否有 <code>GLOBAL_AGENT_NO_PROXY</code> 等环境变量冲突<br>3. 重启 Gateway 使配置生效：<code>openclaw gateway restart</code></div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>文件整理时 AI 没有按预期分类</span><span class="chevron">&#9660;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">1. 尝试给出更具体的指令，明确分类规则<br>2. 要求 AI 先列出分类计划，确认后再执行<br>3. 如果结果不满意，可以逐个调整："请把 X 移到 Y 文件夹"<br>4. 备份目录始终可用，随时可以恢复</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>如何更换或添加其他 AI 模型？</span><span class="chevron">&#9660;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">编辑 <code>~/.openclaw/openclaw.json</code>：<br>1. 在 <code>models.providers</code> 中添加新的提供商配置（需要 baseUrl 和 api 类型）<br>2. 修改 <code>agents.defaults.model.primary</code> 的值为目标模型，格式为 <code>provider/model-name</code><br>3. 重启 Gateway：<code>openclaw gateway restart</code><br>详见 Phase 2 的 Step 5 说明。</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>看到 "Compacting context..." 是什么意思</span><span class="chevron">&#9660;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">这是 OpenClaw 在压缩对话上下文。当对话过长超出模型上下文窗口时会自动触发。<br>1. 不影响正常使用，是正常行为<br>2. 如果频繁出现，可在配置中增大 contextWindow 值<br>3. 建议定期开始新对话以保持最佳体验</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Next Steps -->
+<div class="phase-section">
+  <div class="phase-header">
+    <h2>下一步建议</h2>
+  </div>
+  <div class="phase-body">
+    <div class="next-cards">
+      <div class="next-card">
+        <div class="icon">💬</div>
+        <h4>连接微信</h4>
+        <p>配置微信渠道，通过微信与 AI 助手对话</p>
+      </div>
+      <div class="next-card">
+        <div class="icon">🔍</div>
+        <h4>配置搜索能力</h4>
+        <p>让 AI 能够搜索网页、查找最新信息</p>
+      </div>
+      <div class="next-card">
+        <div class="icon">🧩</div>
+        <h4>探索更多技能</h4>
+        <p>访问 <a href="https://clawhub.com" target="_blank">clawhub.com</a> 发现插件和技能</p>
+      </div>
+      <div class="next-card">
+        <div class="icon">📖</div>
+        <h4>阅读完整文档</h4>
+        <p><a href="https://docs.openclaw.ai" target="_blank">docs.openclaw.ai</a> 包含所有配置选项和高级功能</p>
+      </div>
+      <div class="next-card">
+        <div class="icon">🌐</div>
+        <h4>网络代理配置</h4>
+        <p>使用 Clash/V2Ray？<a href="https://docs.openclaw.ai/security/network-proxy" target="_blank">查看代理文档</a></p>
+      </div>
+      <div class="next-card">
+        <div class="icon">👥</div>
+        <h4>加入社区</h4>
+        <p><a href="https://discord.gg/clawd" target="_blank">Discord 社区</a> 获取帮助和分享经验</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- Footer -->
+<div class="footer">
+  <div class="links">
+    <a href="https://docs.openclaw.ai" target="_blank">文档</a>
+    <a href="https://github.com/openclaw/openclaw" target="_blank">GitHub</a>
+    <a href="https://discord.com/invite/clawd" target="_blank">Discord</a>
+    <a href="https://clawhub.com" target="_blank">技能市场</a>
+  </div>
+  <button class="reset-btn" onclick="resetProgress()">重置进度</button>
+  <p style="margin-top:8px">Created by James | OpenClaw Consultant</p>
+</div>
+
+<script>
+// Progress tracking
+const STORAGE_KEY = 'openclaw-quickstart-progress';
+const TOTAL_STEPS = 13;
+const PHASE_STEPS = {
+  p1: ['step-1-0','step-1-1','step-1-2'],
+  p2: ['step-2-1','step-2-2','step-2-3','step-2-4','step-2-5','step-2-6'],
+  p3: ['step-3-1','step-3-2','step-3-3','step-3-4']
+};
+
+function getProgress() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; }
+}
+function saveProgress(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+function toggleCheck(wrap) {
+  const step = wrap.dataset.step;
+  const data = getProgress();
+  if (data[step]) { delete data[step]; wrap.classList.remove('checked'); }
+  else { data[step] = true; wrap.classList.add('checked'); }
+  saveProgress(data);
+  updateProgress();
+}
+
+function updateProgress() {
+  const data = getProgress();
+  const done = Object.keys(data).filter(k => data[k]).length;
+  const pct = Math.round((done / TOTAL_STEPS) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  ['p1','p2','p3'].forEach(p => {
+    const all = PHASE_STEPS[p].every(s => data[s]);
+    document.getElementById('dot-' + p).classList.toggle('done', all);
+  });
+  if (done === TOTAL_STEPS) fireConfetti();
+}
+
+function restoreCheckboxes() {
+  const data = getProgress();
+  document.querySelectorAll('.checkbox-wrap[data-step]').forEach(wrap => {
+    if (data[wrap.dataset.step]) wrap.classList.add('checked');
+  });
+}
+
+// Sticky progress bar
+function initProgressBar() {
+  const hero = document.querySelector('.hero');
+  const bar = document.getElementById('progressBar');
+  const obs = new IntersectionObserver(entries => {
+    bar.classList.toggle('show', !entries[0].isIntersecting);
+  }, { threshold: 0 });
+  obs.observe(hero);
+}
+
+// Copy to clipboard
+function copyCode(id, btn) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+// Collapsible sections
+function toggleCollapse(id) {
+  const body = document.getElementById(id);
+  const trigger = body.previousElementSibling;
+  body.classList.toggle('open');
+  trigger.classList.toggle('open');
+}
+
+// FAQ accordion
+function toggleFaq(el) {
+  const answer = el.nextElementSibling;
+  el.classList.toggle('open');
+  answer.classList.toggle('open');
+}
+
+// Confetti
+function fireConfetti() {
+  if (document.querySelector('.confetti-piece')) return;
+  const colors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff6b9d','#a66cff'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.animationDelay = Math.random() * 2 + 's';
+    el.style.width = (6 + Math.random() * 6) + 'px';
+    el.style.height = (6 + Math.random() * 6) + 'px';
+    document.body.appendChild(el);
+  }
+  setTimeout(() => document.querySelectorAll('.confetti-piece').forEach(e => e.remove()), 4000);
+}
+
+// Reset
+function resetProgress() {
+  if (confirm('确定要重置所有进度吗？')) {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  restoreCheckboxes();
+  updateProgress();
+  initProgressBar();
+});
+</script>
+
+</body>
+</html>
